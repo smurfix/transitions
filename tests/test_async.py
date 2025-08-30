@@ -1,12 +1,8 @@
 from transitions.extensions.factory import AsyncGraphMachine, HierarchicalAsyncGraphMachine
 
-try:
-    import asyncio
-    from transitions.extensions.asyncio import AsyncMachine, HierarchicalAsyncMachine, AsyncEventData, \
-        AsyncTransition
-
-except (ImportError, SyntaxError):
-    asyncio = None  # type: ignore
+import asyncio
+from transitions.extensions.asyncio import AsyncMachine, HierarchicalAsyncMachine, AsyncEventData, \
+    AsyncTransition
 
 from unittest.mock import MagicMock
 from unittest import skipIf

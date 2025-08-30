@@ -402,7 +402,10 @@ class HierarchicalMachine(Machine):
         )
 
     def __call__(self, to_scope=None):
-        if isinstance(to_scope, str):
+        if isinstance(to_scope, Enum):
+            state = self.states[to_scope.name]
+            to_scope = (state, state.states, state.events, self.prefix_path + [to_scope.name])
+        elif isinstance(to_scope, str):
             state_name = to_scope.split(self.state_cls.separator)[0]
             state = self.states[state_name]
             to_scope = (state, state.states, state.events, self.prefix_path + [state_name])
@@ -730,11 +733,11 @@ class HierarchicalMachine(Machine):
         """
         with self():
             source_path = [] if source == "*" \
-                else source.split(self.state_cls.separator) if isinstance(source, string_types) \
+                else source.split(self.state_cls.separator) if isinstance(source, str) \
                 else self._get_enum_path(source) if isinstance(source, Enum) \
                 else self._get_state_path(source)
             dest_path = [] if dest == "*" \
-                else dest.split(self.state_cls.separator) if isinstance(dest, string_types) \
+                else dest.split(self.state_cls.separator) if isinstance(dest, str) \
                 else self._get_enum_path(dest) if isinstance(dest, Enum) \
                 else self._get_state_path(dest)
             self._remove_nested_transitions(trigger, source_path, dest_path)
