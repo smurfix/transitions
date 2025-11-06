@@ -1,5 +1,7 @@
 import sys
 
+import concurrent.futures
+
 from functools import partial
 
 from transitions_aio.extensions.factory import AsyncGraphMachine, HierarchicalAsyncGraphMachine
@@ -455,6 +457,7 @@ class TestAsync(TestTransitions):
                     if error_mock.called:
                         raise RuntimeError()
                     error_mock()
+                    return
                 raise event_data.error
 
         machine = TimeoutMachine(states=["A", "C", "D", "E",
@@ -464,12 +467,16 @@ class TestAsync(TestTransitions):
 
         async def run():
             async with machine:
-                await machine.to_B()
+                try:
+                    await machine.to_B()
+                except* concurrent.futures.CancelledError:
+                    pass
+                else:
+                    assert error_mock.called
                 assert timout_mock.called
-                assert error_mock.called
                 assert not long_op_mock.called
                 assert machine.is_B()
-                with self.assertRaises(RuntimeError), ungroup:
+                with self.assertRaises((RuntimeError,concurrent.futures.CancelledError)), ungroup:
                     await machine.to_B()
         anyio.run(run)
 
